@@ -5,6 +5,8 @@ import { Canvas } from '@react-three/fiber'
 import Photo from './componets/Photo.jsx'
 import CustomCursor from './componets/CustomCursor.jsx'
 
+const asset = (path) => `${import.meta.env.BASE_URL}${path.replace(/^\/+/, '')}`
+
 function App() {
   const [isLoading, setIsLoading] = useState(true)
 
@@ -17,19 +19,19 @@ function App() {
   }, [])
   const projects = [
     {
-      img: "/photo/3d-illustration-design.png",
+      img: asset("/photo/3d-illustration-design.png"),
       title: "Immersive Design"
     },
     {
-      img: "/photo/3d-websites-16-20240823-9387542.webp",
+      img: asset("/photo/3d-websites-16-20240823-9387542.webp"),
       title: "3D Web Experience"
     },
     {
-      img: "/photo/images.jpg",
+      img: asset("/photo/images.jpg"),
       title: "Creative UI Concept"
     },
     {
-      img: "/photo/maxresdefault.jpg",
+      img: asset("/photo/maxresdefault.jpg"),
       title: "Futuristic Interaction"
     }
   ];
@@ -48,13 +50,13 @@ function App() {
           </div>
         </div>
         <div className="images">
-          <img id='tomorrowland' src="/tommorowland.png" alt="" />
-          <img id='navy-pier' src="/navy-pier.png" alt="" />
-          <img id='msi-chicago' src="/msi-chicago.png" alt="" />
-          <img id='phone' src="/phone.png" alt="" />
-          <img id='kikk' src="/kikk.png" alt="" />
-          <img id='kennedy' src="/kennedy.png" alt="" />
-          <img id='opera' src="/opera.png" alt="" />
+          <img id='tomorrowland' src={asset("/tommorowland.png")} alt="" />
+          <img id='navy-pier' src={asset("/navy-pier.png")} alt="" />
+          <img id='msi-chicago' src={asset("/msi-chicago.png")} alt="" />
+          <img id='phone' src={asset("/phone.png")} alt="" />
+          <img id='kikk' src={asset("/kikk.png")} alt="" />
+          <img id='kennedy' src={asset("/kennedy.png")} alt="" />
+          <img id='opera' src={asset("/opera.png")} alt="" />
         </div>
         <Canvas
           id='canvas-elem'
