@@ -6,14 +6,11 @@ import gsap from "gsap";
 import { useGSAP } from '@gsap/react';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
+gsap.registerPlugin(useGSAP, ScrollTrigger)
+
 const asset = (path) => `${import.meta.env.BASE_URL}${path.replace(/^\/+/, '')}`
 
 const Dog = () => {
-
-
-    gsap.registerPlugin(useGSAP())
-    gsap.registerPlugin(ScrollTrigger)
-
 
     const model = useGLTF(asset("/models/dog.drc.glb"))
 
@@ -26,7 +23,7 @@ const Dog = () => {
     const { actions } = useAnimations(model.animations, model.scene)
 
     useEffect(() => {
-        actions["Take 001"].play()
+        actions["Take 001"]?.play()
     }, [actions])
 
 

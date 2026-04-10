@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import './App.css'
 import Dog from './componets/dog.jsx'
 import { Canvas } from '@react-three/fiber'
@@ -68,7 +68,9 @@ function App() {
             left: 0,
             zIndex: 1,
           }} >
-          <Dog />
+          <Suspense fallback={null}>
+            <Dog />
+          </Suspense>
         </Canvas>
         <section id='section-1' >
           <nav>

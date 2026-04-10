@@ -97,7 +97,7 @@ section {
   top: 0;
   left: 0;
   z-index: -1;
-  background-image: url(/background-l.png);
+  background-image: url(/woof-3d/background-l.png);
   background-repeat: no-repeat;
   background-size: cover;
   transition: all 0.3s linear;
