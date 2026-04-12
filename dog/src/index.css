@@ -387,3 +387,56 @@ main:has(#section-2 .title[img-title="opera"]:hover) .images #opera {
   justify-content: space-evenly;
   align-items: center;
 }
+
+/* Responsive tweaks */
+@media (max-width: 1024px) {
+  #section-1 .middle {
+    gap: 2rem;
+  }
+  #section-1 .middle .left {
+    padding-block: 4rem;
+  }
+
+  #section-2 .titles { padding-left: 4rem; }
+  #section-2 .title h1 { font-size: 3rem; }
+}
+
+@media (max-width: 768px) {
+  /* Hide complex background overlays on small screens */
+  #canvas-elem { display: block; }
+  #canvas-elem::after { display: none; }
+
+  nav { padding: 1rem; }
+
+  .images { display: none; }
+
+  .mobile-3d-fallback {
+    position: fixed;
+    inset: 0 auto auto 0;
+    z-index: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+  }
+
+  .mobile-3d-fallback img {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    max-height: 60vh;
+  }
+
+  .middle { flex-direction: column; }
+  .middle .left, .middle .right { width: 100%; }
+  .middle .left h1 { font-size: 2.2rem; text-align: center; }
+
+  .row3-1, .row3-2 { width: 100%; }
+  .row3-3 h1 { font-size: 2.2rem; }
+
+  section { min-height: 60vh; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
+}

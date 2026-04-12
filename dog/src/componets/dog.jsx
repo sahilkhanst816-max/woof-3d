@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react'
 import * as THREE from "three"
-import { Canvas, useThree } from '@react-three/fiber'
+import { useThree } from '@react-three/fiber'
 import { OrbitControls, useGLTF, useTexture, useAnimations } from '@react-three/drei'
 import gsap from "gsap";
 import { useGSAP } from '@gsap/react';
@@ -10,15 +10,33 @@ gsap.registerPlugin(useGSAP, ScrollTrigger)
 
 const asset = (path) => `${import.meta.env.BASE_URL}${path.replace(/^\/+/, '')}`
 
-const Dog = () => {
+const Dog = ({ isMobile = false }) => {
 
     const model = useGLTF(asset("/models/dog.drc.glb"))
 
-    useThree(({ camera, scene, gl }) => {
-        camera.position.z = 0.55
+    const { camera, gl, size } = useThree()
+
+    useEffect(() => {
+        // Camera and renderer adjustments based on size / mobile
+        if (!camera) return
+
+        // Move camera further back to avoid any perceived zoom when scene moves
+        if (size.width <= 768 || isMobile) {
+            camera.position.set(0, 0, 2.0)
+            camera.fov = 60
+            gl.setPixelRatio(1)
+        } else {
+            camera.position.set(0, 0, 1.2)
+            camera.fov = 50
+            gl.setPixelRatio(Math.min(window.devicePixelRatio, 1.5))
+        }
+        camera.updateProjectionMatrix()
+
         gl.toneMapping = THREE.ReinhardToneMapping
-        gl.outputColorSpace = THREE.SRGBColorSpace
-    })
+        try {
+          gl.outputColorSpace = THREE.SRGBColorSpace
+        } catch (e) {}
+    }, [camera, gl, size.width, isMobile])
 
     const { actions } = useAnimations(model.animations, model.scene)
 
@@ -94,15 +112,14 @@ const Dog = () => {
         uProgress: { value: 1.0 }
     })
 
-    const dogMaterial = new THREE.MeshMatcapMaterial({
-        normalMap: normalMap,
-        matcap: mat2
-    })
+    // Use simpler materials on mobile for performance
+    const dogMaterial = isMobile
+        ? new THREE.MeshStandardMaterial({ metalness: 0.2, roughness: 0.8 })
+        : new THREE.MeshMatcapMaterial({ normalMap: normalMap, matcap: mat2 })
 
-    const branchMaterial = new THREE.MeshMatcapMaterial({
-        normalMap: branchNormalMap,
-        map: branchMap
-    })
+    const branchMaterial = isMobile
+        ? new THREE.MeshStandardMaterial({ map: branchMap, normalMap: branchNormalMap })
+        : new THREE.MeshMatcapMaterial({ normalMap: branchNormalMap, map: branchMap })
 
     function onBeforeCompile(shader) {
         shader.uniforms.uMatcapTexture1 = material.current.uMatcap1
@@ -148,6 +165,31 @@ const Dog = () => {
 
     const dogModel = useRef(model)
 
+    // Ensure ref points to the latest model
+    useEffect(() => {
+        dogModel.current = model
+    }, [model])
+    // Set initial pose (position/rotation/scale) responsively so framing matches across screens
+    useEffect(() => {
+        if (!model || !model.scene) return
+
+        if (size.width <= 768 || isMobile) {
+            model.scene.position.set(0.12, -0.18, 0)
+            model.scene.scale.setScalar(0.6)
+            model.scene.rotation.set(0, Math.PI / 3.9, 0)
+        } else if (size.width <= 1200) {
+            model.scene.position.set(0.18, -0.32, 0)
+            model.scene.scale.setScalar(0.75)
+            model.scene.rotation.set(0, Math.PI / 3.9, 0)
+        } else {
+            model.scene.position.set(0.25, -0.55, 0)
+            model.scene.scale.setScalar(0.85)
+            model.scene.rotation.set(0, Math.PI / 3.9, 0)
+        }
+
+        model.scene.updateMatrixWorld()
+    }, [model, size.width, isMobile])
+
 
     useGSAP(() => {
 
@@ -157,38 +199,29 @@ const Dog = () => {
                 endTrigger: "#section-4",
                 start: "top top",
                 end: "bottom bottom",
-                
                 scrub: true
             }
         })
 
+        const p = () => dogModel.current?.scene?.position
+        const r = () => dogModel.current?.scene?.rotation
+        if (!p() || !r()) return
+
+        const zMove1 = (size.width <= 768 || isMobile) ? 0.5 : 0.75
+        const yMove1 = (size.width <= 768 || isMobile) ? 0.06 : 0.1
+        const xMove = (size.width <= 768 || isMobile) ? 0.25 : 0.5
+        const zMove2 = (size.width <= 768 || isMobile) ? 0.4 : 0.8
+
+        // compute fresh references at timeline execution time
         tl
-            .to(dogModel.current.scene.position, {
-                z: "-=0.75",
-                y: "+=0.1"
-            })
-            .to(dogModel.current.scene.rotation, {
-                x: `+=${Math.PI / 15}`
-            })
-            .to(dogModel.current.scene.rotation, {
-                y: `-=${Math.PI}`,
+            .to(p(), { z: p().z - zMove1, y: p().y + yMove1 })
+            .to(r(), { x: r().x + (Math.PI / 15) })
+            .to(r(), { y: r().y - Math.PI }, "third")
+            .to(p(), { x: p().x - xMove, z: p().z + 0.6, y: p().y - 0.05 }, "third")
+            .to(p(), { z: p().z - zMove2 })
+            .to(r(), { x: r().x - (Math.PI / 15), y: r().y + (Math.PI / 2) })
 
-            }, "third")
-            .to(dogModel.current.scene.position, {
-                x: "-=0.5",
-                z: "+=0.6",
-                y: "-=0.05"
-            }, "third")
-            .to(dogModel.current.scene.position, {
-                z: "-=0.8"
-
-            },)
-            .to(dogModel.current.scene.rotation, {
-                x: `-=${Math.PI / 15}`,
-                y: `+=${Math.PI / 2}`
-            },)
-
-    }, [])
+    }, [size.width, isMobile])
 
     useEffect(() => {
 
@@ -300,7 +333,12 @@ const Dog = () => {
 
     return (
         <>
-            <primitive object={model.scene} position={[0.25, -0.55, 0]} rotation={[0, Math.PI / 3.9, 0]} />
+            <primitive
+                object={model.scene}
+                position={[0.15, -0.4, 0]}
+                rotation={[0, Math.PI / 3.9, 0]}
+                scale={isMobile ? 0.6 : 0.85}
+            />
             <directionalLight position={[0, 5, 5]} color={0xFFFFFF} intensity={10} />
         </>
     )

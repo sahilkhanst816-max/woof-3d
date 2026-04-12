@@ -1,9 +1,11 @@
-import { Suspense, useEffect, useState } from 'react'
+import { Suspense, useEffect, useState, lazy } from 'react'
 import './App.css'
-import Dog from './componets/dog.jsx'
 import { Canvas } from '@react-three/fiber'
 import Photo from './componets/Photo.jsx'
 import CustomCursor from './componets/CustomCursor.jsx'
+import useMediaQuery from './hooks/useMediaQuery'
+
+const Dog = lazy(() => import('./componets/dog.jsx'))
 
 const asset = (path) => `${import.meta.env.BASE_URL}${path.replace(/^\/+/, '')}`
 
@@ -17,6 +19,7 @@ function App() {
 
     return () => window.clearTimeout(timer)
   }, [])
+  const matches = useMediaQuery()
   const projects = [
     {
       img: asset("/photo/3d-illustration-design.png"),
@@ -58,20 +61,32 @@ function App() {
           <img id='kennedy' src={asset("/kennedy.png")} alt="" />
           <img id='opera' src={asset("/opera.png")} alt="" />
         </div>
-        <Canvas
-          id='canvas-elem'
-          style={{
-            height: "100vh",
-            width: "100vw",
-            position: "fixed",
-            top: 0,
-            left: 0,
-            zIndex: 1,
-          }} >
-          <Suspense fallback={null}>
-            <Dog />
-          </Suspense>
-        </Canvas>
+        {!matches?.isMobile && (
+          <Canvas
+            id='canvas-elem'
+            dpr={[1, 1.5]}
+            style={{
+              height: "100vh",
+              width: "100vw",
+              position: "fixed",
+              top: 0,
+              left: 0,
+              zIndex: 1,
+            }}
+            frameloop={'always'}
+          >
+            <Suspense fallback={null}>
+              <Dog isMobile={false} />
+            </Suspense>
+          </Canvas>
+        )}
+
+        {/* Mobile fallback: show a static hero image instead of expensive 3D */}
+        {matches?.isMobile && (
+          <div className="mobile-3d-fallback" aria-hidden="false">
+            <img src={asset('/photo/3d-illustration-design.png')} alt="3D fallback" />
+          </div>
+        )}
         <section id='section-1' >
           <nav>
             <div className="nav-elem">
